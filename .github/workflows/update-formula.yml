@@ -1,0 +1,68 @@
+name: Update Formula
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (semver, no v prefix)"
+        required: true
+        type: string
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout tap repo
+        uses: actions/checkout@v4
+
+      - name: Download checksums
+        run: |
+          curl -fSL -o checksums.txt \
+            "https://github.com/zeroedin/alloy/releases/download/v${{ inputs.version }}/checksums.txt"
+          cat checksums.txt
+
+      - name: Parse SHA256 values
+        id: shas
+        run: |
+          echo "darwin_amd64=$(grep 'alloy-darwin-amd64.tar.gz' checksums.txt | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+          echo "darwin_arm64=$(grep 'alloy-darwin-arm64.tar.gz' checksums.txt | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+          echo "linux_amd64=$(grep 'alloy-linux-amd64.tar.gz' checksums.txt | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+          echo "linux_arm64=$(grep 'alloy-linux-arm64.tar.gz' checksums.txt | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      - name: Update formula
+        run: |
+          FORMULA="Formula/alloy-ssg.rb"
+
+          # Update version
+          sed -i "s/^  version \".*\"/  version \"${{ inputs.version }}\"/" "$FORMULA"
+
+          # Update sha256 values in order of appearance:
+          # 1: darwin-arm64, 2: darwin-amd64, 3: linux-arm64, 4: linux-amd64
+          awk -v da64="${{ steps.shas.outputs.darwin_arm64 }}" \
+              -v dx64="${{ steps.shas.outputs.darwin_amd64 }}" \
+              -v la64="${{ steps.shas.outputs.linux_arm64 }}" \
+              -v lx64="${{ steps.shas.outputs.linux_amd64 }}" \
+          '
+          BEGIN { sha_idx = 0 }
+          /sha256 "/ {
+            sha_idx++
+            if (sha_idx == 1) sub(/"[^"]*"$/, "\"" da64 "\"")
+            if (sha_idx == 2) sub(/"[^"]*"$/, "\"" dx64 "\"")
+            if (sha_idx == 3) sub(/"[^"]*"$/, "\"" la64 "\"")
+            if (sha_idx == 4) sub(/"[^"]*"$/, "\"" lx64 "\"")
+          }
+          { print }
+          ' "$FORMULA" > "$FORMULA.tmp" && mv "$FORMULA.tmp" "$FORMULA"
+
+          echo "Updated formula:"
+          cat "$FORMULA"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/alloy-ssg.rb
+          git commit -m "Update alloy-ssg to ${{ inputs.version }}"
+          git push
