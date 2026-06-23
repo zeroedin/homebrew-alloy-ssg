@@ -1,6 +1,6 @@
 # Homebrew Tap
 
-Custom Homebrew formulae from ZeroEdIn.
+Custom Homebrew formulae from zeroedin.
 
 ## Install
 
