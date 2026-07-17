@@ -2,19 +2,19 @@ class AlloySsg < Formula
   desc "Fast, extensible static site generator built in Go"
   homepage "https://github.com/zeroedin/alloy"
   license :mit
-  version "0.4.2"
+  version "0.5.0"
 
   on_macos do
     if Hardware::CPU.arm?
       url "https://github.com/zeroedin/alloy/releases/download/v#{version}/alloy-darwin-arm64.tar.gz"
-      sha256 "7030262a13ca3a1081de9248dcfb0c2b3d7e43d23c8090533e15732170ef4e0a"
+      sha256 "0eaebbd7594af6b82f95039e443719bef6efdf033ff8c9f8a39e0c25ce6a96ac"
 
       def install
         bin.install "alloy-darwin-arm64" => "alloy"
       end
     else
       url "https://github.com/zeroedin/alloy/releases/download/v#{version}/alloy-darwin-amd64.tar.gz"
-      sha256 "fcbd2979f73a82915eafc52ad50567c613b7e004e57d30178877c05488f323c8"
+      sha256 "3556da72962ab10f0537d8aba5ea7fff6a78ff96c960b8bb666c8a561e6d3cad"
 
       def install
         bin.install "alloy-darwin-amd64" => "alloy"
@@ -25,14 +25,14 @@ class AlloySsg < Formula
   on_linux do
     if Hardware::CPU.arm?
       url "https://github.com/zeroedin/alloy/releases/download/v#{version}/alloy-linux-arm64.tar.gz"
-      sha256 "84d6995f6c8620f8e46c41e360e3edf18c55a2546878107dd30c12ebcadf1a85"
+      sha256 "e46cdbd3339da48e94256af953ec65d1b330925d586bcf7c6c950e9ed24bde23"
 
       def install
         bin.install "alloy-linux-arm64" => "alloy"
       end
     else
       url "https://github.com/zeroedin/alloy/releases/download/v#{version}/alloy-linux-amd64.tar.gz"
-      sha256 "920eaab02df31472f1a6f415e5a9a4c08040e02f28b130437cf28a86dfa06a48"
+      sha256 "cac412bda010fc0ad237123a3c3851911948a77c773069cd349e13c6da86006a"
 
       def install
         bin.install "alloy-linux-amd64" => "alloy"
